@@ -9,4 +9,5 @@ Yigda is a single-origin Next.js document verification platform. Pages and API r
 3. Install dependencies with `npm install`.
 4. Run the app with `npm run dev`.
 
+
 The app seeds a local admin account on first database access using `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
