@@ -1,0 +1,25 @@
+{
+  "name": "yigda-combined",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
+    "ethers": "^6.16.0",
+    "nats": "^2.29.3",
+    "next": "^16.2.6",
+    "pg": "^8.21.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "stripe": "^22.1.1",
+    "unzipper": "^0.12.3",
+    "uuid": "^14.0.0",
+    "web-push": "^3.6.7"
+  }
+}
