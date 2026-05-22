@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 
@@ -10,7 +10,14 @@ export default function LoginPage() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const startedRef = useRef(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    void startLogin();
+  }, []);
 
   async function post(url, body = {}) {
     const response = await fetch(url, {
@@ -26,7 +33,7 @@ export default function LoginPage() {
   async function startLogin() {
     setBusy(true);
     setError("");
-    setStatus("");
+    setStatus("Preparing your NDI login QR code.");
     try {
       const data = await post("/api/ndi/proof-request");
       setProof(data.proof);

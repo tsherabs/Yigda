@@ -10,6 +10,7 @@ export default function CompanyVerifyPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -42,6 +43,25 @@ export default function CompanyVerifyPage() {
     }
   }
 
+  function acceptPDF(candidate) {
+    setError("");
+    setResult(null);
+    if (!candidate) return;
+    const isPDF = candidate.type === "application/pdf" || candidate.name.toLowerCase().endsWith(".pdf");
+    if (!isPDF) {
+      setFile(null);
+      setError("Only PDF files can be verified.");
+      return;
+    }
+    setFile(candidate);
+  }
+
+  function handleDrop(event) {
+    event.preventDefault();
+    setDragging(false);
+    acceptPDF(event.dataTransfer.files?.[0] || null);
+  }
+
   return (
     <>
       <Navbar />
@@ -49,14 +69,29 @@ export default function CompanyVerifyPage() {
         <h1>Verify a Document</h1>
         <p className="muted">Upload a PDF. Yigda hashes it and checks the issued record.</p>
         <form className="panel" onSubmit={verify} style={{ marginTop: 24 }}>
-          <label className="fileDrop">
+          <label
+            className={`fileDrop ${dragging ? "dragging" : ""}`}
+            onDragEnter={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={(event) => {
+              event.preventDefault();
+              setDragging(false);
+            }}
+            onDrop={handleDrop}
+          >
             <input
               type="file"
               accept="application/pdf,.pdf"
               style={{ display: "none" }}
-              onChange={(event) => setFile(event.target.files?.[0] || null)}
+              onChange={(event) => acceptPDF(event.target.files?.[0] || null)}
             />
-            <span>{file ? file.name : "Click to choose a PDF"}</span>
+            <span>{file ? file.name : dragging ? "Drop the PDF here" : "Click to choose a PDF or drag it here"}</span>
           </label>
           <button className="button" disabled={!file || busy} style={{ marginTop: 18 }}>
             {busy ? "Verifying..." : "Verify Document"}
