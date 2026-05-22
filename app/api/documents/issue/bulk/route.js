@@ -6,6 +6,13 @@ import { jsonError, requireOfficialType } from "@/lib/sessions";
 
 export const runtime = "nodejs";
 
+function isIgnoredZipEntry(filePath) {
+  const normalized = String(filePath || "").replace(/\\/g, "/");
+  const parts = normalized.split("/").filter(Boolean);
+  const filename = parts.at(-1) || "";
+  return parts.includes("__MACOSX") || filename.startsWith("._") || filename === ".DS_Store";
+}
+
 export async function POST(request) {
   try {
     const session = requireOfficialType(request, ["org"]);
@@ -25,6 +32,8 @@ export async function POST(request) {
 
     for (const file of archive.files) {
       if (file.type !== "File") continue;
+      if (isIgnoredZipEntry(file.path)) continue;
+
       const filename = path.basename(file.path);
       if (!filename.toLowerCase().endsWith(".pdf")) {
         results.errors.push({ file: filename, reason: "Only PDF files are processed." });

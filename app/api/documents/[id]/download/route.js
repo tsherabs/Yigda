@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import { getCitizenSession, jsonError } from "@/lib/sessions";
+import { jsonError, maybeCitizenSession, maybeOfficialSession } from "@/lib/sessions";
 import { fetchCloudinaryPDF } from "@/lib/storage";
 
 export const runtime = "nodejs";
@@ -15,9 +15,21 @@ function filenameFor(document) {
 
 export async function GET(request, { params }) {
   try {
-    const citizen = getCitizenSession(request);
     const { id } = await params;
-    const { rows } = await query("select * from documents where id=$1 and cid=$2", [id, citizen.cid]);
+    const citizen = maybeCitizenSession(request);
+    const official = maybeOfficialSession(request);
+
+    let rows = [];
+    if (citizen) {
+      const result = await query("select * from documents where id=$1 and cid=$2", [id, citizen.cid]);
+      rows = result.rows;
+    } else if (official?.type === "org") {
+      const result = await query("select * from documents where id=$1 and org_id=$2", [id, official.id]);
+      rows = result.rows;
+    } else {
+      return NextResponse.json({ error: "A citizen or issuing organization session is required." }, { status: 401 });
+    }
+
     if (!rows.length) {
       return NextResponse.json({ error: "Document not found." }, { status: 404 });
     }

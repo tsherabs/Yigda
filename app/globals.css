@@ -70,6 +70,50 @@ textarea {
   width: 34px;
 }
 
+.logoAvatar {
+  align-items: center;
+  background: #eef5ee;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--green-dark);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-weight: 800;
+  height: 54px;
+  justify-content: center;
+  overflow: hidden;
+  width: 54px;
+}
+
+.logoAvatar.small {
+  height: 42px;
+  width: 42px;
+}
+
+.logoAvatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.identityRow {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.logoUploader {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.logoUploader input {
+  max-width: 260px;
+}
+
 .navLinks {
   align-items: center;
   display: flex;
@@ -462,6 +506,12 @@ textarea {
   text-align: center;
 }
 
+.fileDrop.dragging {
+  background: #e9f7ef;
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+
 .resultVerified {
   background: #e9f7ef;
   border-color: #b9e2c8;
@@ -475,6 +525,61 @@ textarea {
 .resultFailed {
   background: var(--red-soft);
   border-color: #f2b8b0;
+}
+
+.downloadStatus {
+  background: #f6faf7;
+  border: 1px solid #cfe6d8;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+}
+
+.downloadStatus.done {
+  background: #e9f7ef;
+}
+
+.downloadStatusHeader {
+  align-items: center;
+  color: var(--green-dark);
+  display: flex;
+  font-size: 12px;
+  font-weight: 800;
+  justify-content: space-between;
+}
+
+.downloadTrack {
+  background: #dfeee5;
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+  position: relative;
+}
+
+.downloadBar {
+  animation: downloadProgress 1.1s ease-in-out infinite;
+  background: var(--green);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  width: 42%;
+}
+
+.downloadStatus.done .downloadBar {
+  animation: none;
+  width: 100%;
+}
+
+@keyframes downloadProgress {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(260%);
+  }
 }
 
 @media (max-width: 860px) {
