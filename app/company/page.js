@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import LogoAvatar from "@/components/LogoAvatar";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -9,7 +10,9 @@ function CompanyContent() {
   const [user, setUser] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [plans, setPlans] = useState([]);
+  const [showPlans, setShowPlans] = useState(false);
   const [busy, setBusy] = useState("");
+  const [logoBusy, setLogoBusy] = useState(false);
   const [error, setError] = useState("");
   const [checkoutMessage, setCheckoutMessage] = useState("");
   const router = useRouter();
@@ -42,6 +45,8 @@ function CompanyContent() {
       const data = await fetch("/api/company/subscription").then((response) => response.json());
       setSubscription(data.subscription);
       setPlans(data.plans || []);
+      const isActive = data.subscription?.status === "active" && new Date(data.subscription.end_date) > new Date();
+      setShowPlans(!isActive);
     }
     load();
   }, [router, checkoutStatus, checkoutSessionId]);
@@ -64,6 +69,27 @@ function CompanyContent() {
     }
   }
 
+  async function updateLogo(file) {
+    if (!file) return;
+    setLogoBusy(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("logo", file);
+      const response = await fetch("/api/auth/official/logo", {
+        method: "POST",
+        body
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Logo upload failed.");
+      setUser(data.user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Logo upload failed.");
+    } finally {
+      setLogoBusy(false);
+    }
+  }
+
   const active = subscription?.status === "active" && new Date(subscription.end_date) > new Date();
 
   return (
@@ -71,9 +97,21 @@ function CompanyContent() {
       <Navbar />
       <main className="page">
         <div className="dashboardHeader">
-          <div>
-            <h1>Company Verifier Dashboard</h1>
-            <p className="muted">Subscribe before verifying uploaded PDFs or opening citizen share links.</p>
+          <div className="identityRow">
+            <LogoAvatar src={user?.logoUrl} name={user?.name} />
+            <div>
+              <h1>Company Verifier Dashboard</h1>
+              <p className="muted">Subscribe before verifying uploaded PDFs or opening citizen share links.</p>
+              <label className="logoUploader">
+                <span className="button secondary">{logoBusy ? "Uploading..." : "Change Logo"}</span>
+                <input
+                  disabled={logoBusy}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(event) => updateLogo(event.target.files?.[0] || null)}
+                />
+              </label>
+            </div>
           </div>
           {user && <span className="badge green">{user.name}</span>}
         </div>
@@ -95,25 +133,32 @@ function CompanyContent() {
             <Link className={`button ${active ? "" : "secondary"}`} href="/company/verify">
               Verify a Document
             </Link>
+            {active && (
+              <button className="button secondary" onClick={() => setShowPlans((visible) => !visible)} style={{ marginLeft: 10 }}>
+                {showPlans ? "Hide Plans" : "Upgrade Plans"}
+              </button>
+            )}
           </div>
         </section>
 
-        <div className="grid three">
-          {plans.map((plan) => (
-            <section className="card" key={plan.id} style={{ borderColor: plan.popular ? "var(--green)" : "var(--line)" }}>
-              {plan.popular && <span className="badge gold">Most Popular</span>}
-              <h2>{plan.name}</h2>
-              <p style={{ fontSize: 30, color: "var(--ink)", fontWeight: 800 }}>{plan.price}<span style={{ fontSize: 15, color: "var(--muted)" }}>/month</span></p>
-              <p>{plan.limit ? `${plan.limit} verifications/month` : "Unlimited verifications"}</p>
-              <ul className="muted" style={{ lineHeight: 1.8, paddingLeft: 18 }}>
-                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
-              </ul>
-              <button className="button" disabled={busy === plan.id} onClick={() => subscribe(plan.id)}>
-                {busy === plan.id ? "Redirecting..." : "Subscribe"}
-              </button>
-            </section>
-          ))}
-        </div>
+        {showPlans && (
+          <div className="grid three">
+            {plans.map((plan) => (
+              <section className="card" key={plan.id} style={{ borderColor: plan.popular ? "var(--green)" : "var(--line)" }}>
+                {plan.popular && <span className="badge gold">Most Popular</span>}
+                <h2>{plan.name}</h2>
+                <p style={{ fontSize: 30, color: "var(--ink)", fontWeight: 800 }}>{plan.price}<span style={{ fontSize: 15, color: "var(--muted)" }}>/month</span></p>
+                <p>{plan.limit ? `${plan.limit} verifications/month` : "Unlimited verifications"}</p>
+                <ul className="muted" style={{ lineHeight: 1.8, paddingLeft: 18 }}>
+                  {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
+                </ul>
+                <button className="button" disabled={busy === plan.id} onClick={() => subscribe(plan.id)}>
+                  {busy === plan.id ? "Redirecting..." : active ? "Upgrade" : "Subscribe"}
+                </button>
+              </section>
+            ))}
+          </div>
+        )}
       </main>
     </>
   );

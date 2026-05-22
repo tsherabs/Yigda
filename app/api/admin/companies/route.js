@@ -13,6 +13,7 @@ export async function GET(request) {
           c.id,
           c.name,
           c.country,
+          c.logo_url,
           c.status,
           c.created_at,
           s.plan,

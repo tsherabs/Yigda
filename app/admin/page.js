@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
+import LogoAvatar from "@/components/LogoAvatar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -107,9 +108,12 @@ export default function AdminPage() {
                 {pending.length === 0 && <p>No organizations are waiting.</p>}
                 {pending.map((org) => (
                   <div className="listItem" key={org.id}>
-                    <div>
-                      <strong>{org.name}</strong>
-                      <p>{org.type || "Organization"} in {org.country || "N/A"}</p>
+                    <div className="identityRow">
+                      <LogoAvatar src={org.logo_url} name={org.name} size="sm" />
+                      <div>
+                        <strong>{org.name}</strong>
+                        <p>{org.type || "Organization"} in {org.country || "N/A"}</p>
+                      </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button className="button" onClick={() => { setApproving(org); setSelected([]); }}>Approve</button>
@@ -125,9 +129,12 @@ export default function AdminPage() {
               <div className="tableList" style={{ marginTop: 16 }}>
                 {approved.map((org) => (
                   <div className="listItem" key={org.id}>
-                    <div>
-                      <strong>{org.name}</strong>
-                      <p>{(org.document_types || []).join(", ") || "No document types assigned"}</p>
+                    <div className="identityRow">
+                      <LogoAvatar src={org.logo_url} name={org.name} size="sm" />
+                      <div>
+                        <strong>{org.name}</strong>
+                        <p>{(org.document_types || []).join(", ") || "No document types assigned"}</p>
+                      </div>
                     </div>
                     <span className="badge green">approved</span>
                   </div>
@@ -141,9 +148,12 @@ export default function AdminPage() {
                 <div className="tableList" style={{ marginTop: 16 }}>
                   {rejected.map((org) => (
                     <div className="listItem" key={org.id}>
-                      <div>
-                        <strong>{org.name}</strong>
-                        <p>{org.type || "Organization"}</p>
+                      <div className="identityRow">
+                        <LogoAvatar src={org.logo_url} name={org.name} size="sm" />
+                        <div>
+                          <strong>{org.name}</strong>
+                          <p>{org.type || "Organization"}</p>
+                        </div>
                       </div>
                       <span className="badge red">rejected</span>
                     </div>
@@ -158,9 +168,12 @@ export default function AdminPage() {
             <div className="tableList" style={{ marginTop: 16 }}>
               {companies.map((company) => (
                 <div className="listItem" key={company.id}>
-                  <div>
-                    <strong>{company.name}</strong>
-                    <p>{company.country || "N/A"} - subscription {company.subscription_status || "inactive"}</p>
+                  <div className="identityRow">
+                    <LogoAvatar src={company.logo_url} name={company.name} size="sm" />
+                    <div>
+                      <strong>{company.name}</strong>
+                      <p>{company.country || "N/A"} - subscription {company.subscription_status || "inactive"}</p>
+                    </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <span className={`badge ${company.status === "active" ? "green" : "red"}`}>{company.status}</span>

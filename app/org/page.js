@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
+import LogoAvatar from "@/components/LogoAvatar";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +20,7 @@ export default function OrgPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [logoBusy, setLogoBusy] = useState(false);
   const [bulkForm, setBulkForm] = useState({ documentType: "", issueDate: "" });
   const [bulkFile, setBulkFile] = useState(null);
   const [bulkResults, setBulkResults] = useState(null);
@@ -44,6 +46,28 @@ export default function OrgPage() {
   async function loadIssuedDocs() {
     const data = await fetch("/api/org/documents").then((response) => response.json());
     setIssuedDocs(data.documents || []);
+  }
+
+  async function updateLogo(file) {
+    if (!file) return;
+    setLogoBusy(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("logo", file);
+      const response = await fetch("/api/auth/official/logo", {
+        method: "POST",
+        body
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Logo upload failed.");
+      setUser(data.user);
+      setMessage("Logo updated.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Logo upload failed.");
+    } finally {
+      setLogoBusy(false);
+    }
   }
 
   const selectedType = useMemo(() => {
@@ -83,7 +107,6 @@ export default function OrgPage() {
       );
       setForm({ cid: "", documentType: "", issueDate: "" });
       setFile(null);
-      event.currentTarget.reset();
       await loadIssuedDocs();
       setTab("issued");
     } catch (err) {
@@ -152,9 +175,21 @@ export default function OrgPage() {
       <Navbar />
       <main className="orgPage">
         <div className="orgHeader">
-          <div>
-            <h1>Organization Portal</h1>
-            {user && <p>{user.name}</p>}
+          <div className="identityRow">
+            <LogoAvatar src={user?.logoUrl} name={user?.name} />
+            <div>
+              <h1>Organization Portal</h1>
+              {user && <p>{user.name}</p>}
+              <label className="logoUploader">
+                <span className="orgSecondaryButton">{logoBusy ? "Uploading..." : "Change Logo"}</span>
+                <input
+                  disabled={logoBusy}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(event) => updateLogo(event.target.files?.[0] || null)}
+                />
+              </label>
+            </div>
           </div>
         </div>
 
@@ -214,6 +249,7 @@ export default function OrgPage() {
             <label>
               PDF File
               <input
+                key={file ? "file-selected" : "file-empty"}
                 type="file"
                 accept="application/pdf,.pdf"
                 onChange={(event) => setFile(event.target.files?.[0] || null)}
@@ -316,8 +352,8 @@ export default function OrgPage() {
                     <p>Blockchain: <code>{doc.tx_hash ? shortHash(doc.tx_hash) : "Pending Sepolia confirmation"}</code></p>
                   </div>
                   <div className="orgDocActions">
-                    <a className="orgSecondaryButton" href={doc.cloudinary_url} target="_blank" rel="noreferrer">
-                      Cloud File
+                    <a className="orgSecondaryButton" href={`/api/documents/${doc.id}/download`}>
+                      Download PDF
                     </a>
                     {doc.status === "active" && (
                       <button className="orgDangerButton" onClick={() => setRevokeTarget(doc)}>

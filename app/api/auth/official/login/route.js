@@ -41,7 +41,8 @@ export async function POST(request) {
         const user = {
           id: org.rows[0].id,
           name: org.rows[0].name,
-          type: "org"
+          type: "org",
+          logoUrl: org.rows[0].logo_url || null
         };
         const response = NextResponse.json({ user, redirectTo: "/org" });
         setOfficialSession(response, user);
@@ -58,7 +59,8 @@ export async function POST(request) {
         const user = {
           id: company.rows[0].id,
           name: company.rows[0].name,
-          type: "company"
+          type: "company",
+          logoUrl: company.rows[0].logo_url || null
         };
         const response = NextResponse.json({ user, redirectTo: "/company" });
         setOfficialSession(response, user);

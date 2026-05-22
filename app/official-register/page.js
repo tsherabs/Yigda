@@ -13,17 +13,24 @@ export default function OfficialRegisterPage() {
   const [busy, setBusy] = useState(false);
   const [org, setOrg] = useState({ name: "", type: "University", country: "Bhutan", password: "", confirm: "" });
   const [company, setCompany] = useState({ name: "", country: "Bhutan", password: "", confirm: "" });
+  const [orgLogo, setOrgLogo] = useState(null);
+  const [companyLogo, setCompanyLogo] = useState(null);
   const router = useRouter();
 
-  async function register(url, payload) {
+  async function register(url, payload, logo) {
     setBusy(true);
     setError("");
     setMessage("");
     try {
+      const body = new FormData();
+      for (const [key, value] of Object.entries(payload)) {
+        if (key !== "confirm") body.append(key, value || "");
+      }
+      if (logo) body.append("logo", logo);
+
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Registration failed.");
@@ -39,13 +46,13 @@ export default function OfficialRegisterPage() {
   function submitOrg(event) {
     event.preventDefault();
     if (org.password !== org.confirm) return setError("Passwords do not match.");
-    return register("/api/register/organization", org);
+    return register("/api/register/organization", org, orgLogo);
   }
 
   function submitCompany(event) {
     event.preventDefault();
     if (company.password !== company.confirm) return setError("Passwords do not match.");
-    return register("/api/register/company", company);
+    return register("/api/register/company", company, companyLogo);
   }
 
   return (
@@ -85,6 +92,11 @@ export default function OfficialRegisterPage() {
               <input className="input" value={org.country} onChange={(event) => setOrg({ ...org, country: event.target.value })} />
             </label>
             <label className="label">
+              Logo
+              <input className="input" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setOrgLogo(event.target.files?.[0] || null)} />
+              <span className="muted">{orgLogo ? orgLogo.name : "Optional PNG, JPG, or WebP up to 2 MB."}</span>
+            </label>
+            <label className="label">
               Password
               <input className="input" type="password" minLength={8} value={org.password} onChange={(event) => setOrg({ ...org, password: event.target.value })} required />
             </label>
@@ -103,6 +115,11 @@ export default function OfficialRegisterPage() {
             <label className="label">
               Country
               <input className="input" value={company.country} onChange={(event) => setCompany({ ...company, country: event.target.value })} />
+            </label>
+            <label className="label">
+              Logo
+              <input className="input" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setCompanyLogo(event.target.files?.[0] || null)} />
+              <span className="muted">{companyLogo ? companyLogo.name : "Optional PNG, JPG, or WebP up to 2 MB."}</span>
             </label>
             <label className="label">
               Password
